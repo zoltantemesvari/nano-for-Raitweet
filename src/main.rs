@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 #![cfg_attr(feature = "deny_warnings", deny(warnings))]
 
-use crate::keys::{address::Address, signature::Signature, public::Public};
+use crate::keys::{address::Address, signature::Signature};
 
 
 mod keys;
@@ -26,5 +26,10 @@ fn main() {
     //address.to_public().verify(message, &signature).unwrap();
     let public_key = address.to_public();
     println!("{:?}",public_key);
-    public_key.verify(message, &signature).unwrap();
+
+    match public_key.verify(message, &signature) {
+        Ok(_) => println!("Signature is valid"),
+        Err(_) => println!("Signature is invalid"),
+    }
+
 }

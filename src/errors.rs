@@ -4,8 +4,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Invalid version: {0}")]
-    InvalidVersion(String),
+   
 
     #[error("From hex error: {msg} {source}")]
     FromHexError {
@@ -22,8 +21,6 @@ pub enum Error {
     #[error("Try from slice error")]
     TryFromSliceError(#[from] std::array::TryFromSliceError),
 
-    #[error("There is only one private key in this wallet. Only use index 0.")]
-    WalletError,
 
     #[error("Invalid Nano address")]
     InvalidAddress,
@@ -40,9 +37,6 @@ pub enum Error {
     #[error("Extended secret key error")]
     ExtendedSecretKeyError(#[from] ed25519_dalek_bip32::Error),
 
-    #[error("Mnemonic error")]
-    MnemonicError(#[from] bip39::ErrorKind),
-
     #[error("Wrong length for {msg} (expected {expected:?}, found {found:?})")]
     WrongLength {
         msg: String,
@@ -55,23 +49,5 @@ pub enum Error {
 
     #[error("Parse big decimal error")]
     ParseBigDecimalError(#[from] bigdecimal::ParseBigDecimalError),
-
-    #[error("Possible language codes are {0}")]
-    LanguageError(String),
-
-    #[error("Invalid armor content: {0}")]
-    InvalidArmor(String),
-
-    #[cfg(any(feature = "rpc_client", feature = "rpc_server"))]
-    #[error("RPC request failed: {0}")]
-    RPCRequestFailed(#[from] reqwest::Error),
-
-    #[error("Bad RPC response: {err:?} response: {response}")]
-    BadRPCResponse {
-        err: serde_json::Error,
-        response: String,
-    },
-
-    #[error("RPC error: {0}")]
-    RPCError(String),
+    
 }

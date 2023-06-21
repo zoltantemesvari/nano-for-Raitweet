@@ -18,6 +18,10 @@ impl Public {
     pub const LEN: usize = 32;
     const ADDRESS_CHECKSUM_LEN: usize = 5;
 
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+
     fn dalek_key(&self) -> Result<ed25519_dalek::PublicKey, Error> {
         Ok(
             ed25519_dalek::PublicKey::from_bytes(&self.0).map_err(|e| Error::SignatureError {

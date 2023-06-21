@@ -1,10 +1,8 @@
 use crate::errors::Error;
 use bitvec::prelude::*;
 use blake2::digest::{Update, VariableOutput};
-use blake2::VarBlake2b;
+use blake2::Blake2bVar;
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Deserializer};
-use std::str::FromStr;
 
 pub fn to_hex(bytes: &[u8]) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
@@ -22,56 +20,20 @@ pub fn to_hex_lower(bytes: &[u8]) -> String {
     s
 }
 
-pub fn hex_formatter(f: &mut std::fmt::Formatter<'_>, bytes: &[u8]) -> std::fmt::Result {
-    for byte in bytes {
-        write!(f, "{:02X}", byte)?;
-    }
-    Ok(())
-}
 
-pub fn hex_formatter_lower(f: &mut std::fmt::Formatter<'_>, bytes: &[u8]) -> std::fmt::Result {
-    for byte in bytes {
-        write!(f, "{:02x}", byte)?;
-    }
-    Ok(())
-}
-
-pub fn deserialize_from_str<'de, T, D>(
-    deserializer: D,
-) -> Result<T, <D as Deserializer<'de>>::Error>
-where
-    D: Deserializer<'de>,
-    T: FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Display,
-{
-    let s: &str = Deserialize::deserialize(deserializer)?;
-    Ok(T::from_str(s).map_err(serde::de::Error::custom)?)
-}
-
-pub fn deserialize_from_string<'de, T, D>(
-    deserializer: D,
-) -> Result<T, <D as Deserializer<'de>>::Error>
-where
-    D: Deserializer<'de>,
-    T: FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Display,
-{
-    let s: String = Deserialize::deserialize(deserializer)?;
-    Ok(T::from_str(s.as_str()).map_err(serde::de::Error::custom)?)
-}
 
 pub fn blake2b(size: usize, data: &[u8]) -> Box<[u8]> {
-    let mut blake = VarBlake2b::new(size).expect("Output size was zero");
+    let mut blake = Blake2bVar::new(size).expect("Output size was zero");
     blake.update(&data);
     blake.finalize_boxed()
 }
 
 /// Use this instead of [blake2b] to probably prevent an allocation.
-pub fn blake2b_callback(size: usize, data: &[u8], f: impl FnOnce(&[u8])) {
-    let mut blake = VarBlake2b::new(size).expect("Output size was zero");
-    blake.update(&data);
-    blake.finalize_variable(f)
-}
+//pub fn blake2b_callback(size: usize, data: &[u8], f: impl FnOnce(&[u8])) {
+//    let mut blake = Blake2bVar::new(size).expect("Output size was zero");
+//    blake.update(&data);
+//    blake.finalize_variable(f);
+//}
 
 pub(crate) const ALPHABET: &str = "13456789abcdefghijkmnopqrstuwxyz";
 static ALPHABET_VEC: Lazy<Vec<char>> = Lazy::new(|| ALPHABET.chars().collect());
@@ -124,10 +86,7 @@ pub fn decode_nano_base_32(s: &str) -> Result<BitVec<u8, Msb0>, Error> {
 macro_rules! hexify {
     ($struct:ident, $description:expr) => {
         impl $struct {
-            pub fn as_bytes(&self) -> &[u8] {
-                &self.0
-            }
-
+           
             pub fn as_hex(&self) -> String {
                 crate::encoding::to_hex(&self.0)
             }
@@ -138,13 +97,13 @@ macro_rules! hexify {
         }
 
         impl ::std::str::FromStr for $struct {
-            type Err = crate::Error;
+            type Err = crate::errors::Error;
 
-            fn from_str(s: &str) -> crate::Result<Self> {
+            fn from_str(s: &str) -> crate::errors::Result<Self> {
                 use ::std::convert::TryFrom;
 
                 crate::encoding::expect_len(s.len(), Self::LEN * 2, $description)?;
-                let vec = hex::decode(s.as_bytes()).map_err(|e| crate::Error::FromHexError {
+                let vec = hex::decode(s.as_bytes()).map_err(|e| crate::errors::Error::FromHexError {
                     msg: String::from($description),
                     source: e,
                 })?;
@@ -172,9 +131,9 @@ macro_rules! hexify {
         }
 
         impl ::std::convert::TryFrom<&[u8]> for $struct {
-            type Error = crate::Error;
+            type Error = crate::errors::Error;
 
-            fn try_from(v: &[u8]) -> crate::Result<Self> {
+            fn try_from(v: &[u8]) -> crate::errors::Result<Self> {
                 Ok(Self(<[u8; Self::LEN]>::try_from(v)?))
             }
         }
@@ -294,20 +253,13 @@ mod tests {
     }
 }
 
-pub fn expect_len(got_len: usize, expected_len: usize, msg: &str) -> crate::Result<()> {
+pub fn expect_len(got_len: usize, expected_len: usize, msg: &str) -> crate::errors::Result<()> {
     if got_len != expected_len {
-        return Err(crate::Error::WrongLength {
+        return Err(crate::errors::Error::WrongLength {
             msg: msg.to_string(),
             expected: expected_len,
             found: got_len,
         });
     }
     Ok(())
-}
-
-pub fn len_err_msg(got_len: usize, expected_len: usize, msg: &str) -> String {
-    format!(
-        "{} is the wrong length: got: {} expected: {}",
-        msg, got_len, expected_len,
-    )
 }

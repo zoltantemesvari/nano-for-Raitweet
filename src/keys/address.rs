@@ -1,4 +1,4 @@
-use crate::encoding::{decode_nano_base_32, encode_nano_base_32};
+use crate::encoding::{self};
 use crate::keys::public::{Public};
 use crate::errors::Error;
 use bitvec::prelude::*;
@@ -10,26 +10,7 @@ use std::str::FromStr;
 use std::str;
 use hex::encode as to_hex;
 
-/// Nano address. e.g. `nano_3o3nkaqbgxbuhmcrf38tpxyhsf5semmcahejyk9z5ybffm7tjhizrfqo7xkg`
-///
-/// You can parse and validate a Nano address using trait@FromStr:
-/// ```
-/// use feeless::Address;
-/// use std::str::FromStr;
-///
-/// # fn main() -> anyhow::Result<()> {
-/// let s = "nano_3o3nkaqbgxbuhmcrf38tpxyhsf5semmcahejyk9z5ybffm7tjhizrfqo7xkg";
-/// let address = Address::from_str(s)?;
-/// # Ok(())
-/// # }
-/// ```
-///
-/// The structure of an address is:
-/// ```text
-/// nano_3o3nkaqbgxbuhmcrf38tpxyhsf5semmcahejyk9z5ybffm7tjhizrfqo7xkg
-/// [   ][encoded public key                                ][chksum]
-/// [5  ][52                                                ][8     ] <-- Bytes
-/// ```
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize, Eq, Hash)]
 pub struct Address(String);
 
