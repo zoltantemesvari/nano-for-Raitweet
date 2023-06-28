@@ -3,8 +3,9 @@ use crate::hexify;
 use crate::errors::Error;
 use crate::{encoding, Address, Signature};
 use bitvec::prelude::*;
-use ed25519_dalek::Verifier;
+use ed25519_dalek_blake2b::Verifier;
 use serde::{Deserialize, Deserializer, Serializer};
+use std::io::Read;
 use std::iter::FromIterator;
 use std::str::FromStr;
 
@@ -22,9 +23,9 @@ impl Public {
         &self.0
     }
 
-    fn dalek_key(&self) -> Result<ed25519_dalek::PublicKey, Error> {
+    fn dalek_key(&self) -> Result<ed25519_dalek_blake2b::PublicKey, Error> {
         Ok(
-            ed25519_dalek::PublicKey::from_bytes(&self.0).map_err(|e| Error::SignatureError {
+            ed25519_dalek_blake2b::PublicKey::from_bytes(&self.0).map_err(|e| Error::SignatureError {
                 msg: String::from("Converting to PublicKey"),
                 source: e,
             })?,
@@ -51,7 +52,7 @@ impl Public {
                     .map_err(|e| Error::SignatureError {
                         msg: format!(
                             "Public verification failed: sig: {:?} message: {:?} key: {:?}",
-                            signature, message, key
+                            signature, String::from_utf8_lossy(message), &self
                         ),
                         source: e,
                     })
@@ -64,8 +65,8 @@ impl Public {
     }
 }
 
-impl From<ed25519_dalek::PublicKey> for Public {
-    fn from(v: ed25519_dalek::PublicKey) -> Self {
+impl From<ed25519_dalek_blake2b::PublicKey> for Public {
+    fn from(v: ed25519_dalek_blake2b::PublicKey) -> Self {
         Self(*v.as_bytes())
     }
 }

@@ -11,8 +11,8 @@ impl Signature {
     pub(crate) const LEN: usize = 64;
 
 
-    pub(crate) fn internal(&self) -> ed25519_dalek::Signature {
-       // ed25519_dalek::Signature::new(self.0)
-       ed25519_dalek::Signature::from_bytes(&self.0).unwrap()
+    pub(crate) fn internal(&self) -> ed25519_dalek_blake2b::Signature {
+       // ed25519_dalek_blake2b::Signature::new(self.0)
+       ed25519_dalek_blake2b::Signature::from_bytes(&self.0).unwrap()
     }
 }

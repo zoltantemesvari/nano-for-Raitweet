@@ -15,7 +15,7 @@ pub enum Error {
     #[error("Signature error")]
     SignatureError {
         msg: String,
-        source: ed25519_dalek::SignatureError,
+        source: ed25519_dalek_blake2b::SignatureError,
     },
 
     #[error("Try from slice error")]
