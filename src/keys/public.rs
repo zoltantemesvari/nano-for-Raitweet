@@ -8,6 +8,7 @@ use serde::{Deserialize, Deserializer, Serializer};
 use std::io::Read;
 use std::iter::FromIterator;
 use std::str::FromStr;
+use anyhow::anyhow;
 
 /// 256 bit public key which can be converted into an [Address](crate::Address) or verify a [Signature](crate::Signature).
 #[derive(Clone, Eq, PartialEq, Hash)]
@@ -48,7 +49,7 @@ impl Public {
 
         match result {
             Ok(key) => {
-                key.verify(message, &signature.internal())
+                key.verify_strict(message, &signature.internal())
                     .map_err(|e| Error::SignatureError {
                         msg: format!(
                             "Public verification failed: sig: {:?} message: {:?} key: {:?}",
@@ -90,4 +91,20 @@ where
         .map_err(serde::de::Error::custom)?
         .to_public())
 }
+
+pub fn validate_message(
+    public_key: &Public,
+    message: &[u8],
+    signature: &Signature,
+) -> anyhow::Result<()> {
+    let public = ed25519_dalek_blake2b::PublicKey::from_bytes(public_key.as_bytes())
+        .map_err(|_| anyhow!("could not extract public key"))?;
+    let sig = ed25519_dalek_blake2b::Signature::from_bytes(signature.as_bytes())
+        .map_err(|_| anyhow!("invalid signature bytes"))?;
+    public
+        .verify(message,  &sig)
+        .map_err(|_| anyhow!("could not verify message"))?;
+    Ok(())
+}
+
 

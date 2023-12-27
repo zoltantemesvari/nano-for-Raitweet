@@ -15,4 +15,8 @@ impl Signature {
        // ed25519_dalek_blake2b::Signature::new(self.0)
        ed25519_dalek_blake2b::Signature::from_bytes(&self.0).unwrap()
     }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
 }

@@ -3,6 +3,7 @@
 #![cfg_attr(feature = "deny_warnings", deny(clippy::all))]
 
 use crate::keys::{address::Address, signature::Signature};
+use keys::public::validate_message;
 use reqwest;
 
 mod keys;
@@ -45,7 +46,24 @@ async fn main() {
         Err(errrormessage) => println!("Invalid signature: {:?}", errrormessage),
     }
 
+    match validate_message(&public_key, message, &signature) 
 
+{
+        Ok(_) => println!("Signature is valid"),
+        Err(errrormessage) => println!("Invalid signature: {:?}", errrormessage),
+    }
+
+    // Someone else can verify the message based on your address or public key.
+    //address.to_public().verify(message, &signature).unwrap();
+    //let public_key = address.to_public();
+    //println!("{:?}",public_key);
+
+    //match public_key.verify(message, &signature) {
+    //    Ok(_) => println!("Signature is valid"),
+    //    Err(errrormessage) => println!("Invalid signature: {:?}", errrormessage),
+    //}
+
+    //match validate_message(public_key, message, signature)
 async fn block_account(block_hash: &str) -> Result<String, Box<dyn std::error::Error>> {
     let endpoint = String::from(NANOSCC_ENDPOINT);
     let full_endpoint = endpoint + block_hash;

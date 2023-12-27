@@ -1,11 +1,11 @@
 use crate::encoding::{self};
-use crate::keys::public::{Public};
+use crate::keys::public::Public;
 use crate::errors::Error;
 use bitvec::prelude::*;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::convert::{TryFrom};
+use std::convert::TryFrom;
 use std::str::FromStr;
 use std::str;
 use hex::encode as to_hex;
